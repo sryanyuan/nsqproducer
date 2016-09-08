@@ -11,7 +11,8 @@ Once all endpoint is unavailable, it will pull nsqd node list from nsqlookupd ag
 
 ## usage
 
-	producer, err := nsqproducer.NewNSQProducer(nsqlookupdAddr, cfg, &nsqDebugLogger, nsq.LogLevelDebug)
+	nsqlookupdAddrs := []string{"127.0.0.1:4161"}
+	producer, err := nsqproducer.NewNSQProducer(nsqlookupdAddrs, cfg, &nsqDebugLogger, nsq.LogLevelDebug)
 	if nil != err {
 		return err
 	}

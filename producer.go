@@ -49,12 +49,12 @@ type nsqlookupdNodesData struct {
 }
 type nsqlookupdNodesResult struct {
 	StatusCode int                 `json:"status_code"`
-	StatusText string              `json:"status_text"`
+	StatusText string              `json:"status_txt"`
 	Data       nsqlookupdNodesData `json:"data"`
 }
 
 type nsqProducer struct {
-	lookupdAddr    string
+	lookupdAddrs   []string
 	cfg            *nsq.Config
 	availableNodes []nsqlookupdNodesProducer
 
@@ -156,7 +156,7 @@ func (n *nsqProducer) getProducerWithRetry() (*nsq.Producer, error) {
 	if err != nil {
 		n.Stop()
 		for i := 0; i < maxRetryTimes; i++ {
-			n.availableNodes, err = getAllAvailableNSQDFromNSQLookupd(n.lookupdAddr)
+			n.availableNodes, err = getAllAvailableNSQDFromNSQLookupds(n.lookupdAddrs)
 			if nil != err {
 				continue
 			}
@@ -171,6 +171,26 @@ func (n *nsqProducer) getProducerWithRetry() (*nsq.Producer, error) {
 	}
 
 	return producer, err
+}
+
+//Get all available nodes from nsqlookupd
+func getAllAvailableNSQDFromNSQLookupds(nsqlookupdAddrs []string) ([]nsqlookupdNodesProducer, error) {
+	if nil == nsqlookupdAddrs ||
+		len(nsqlookupdAddrs) == 0 {
+		return nil, fmt.Errorf("nsqlookupd address must be non-empty")
+	}
+
+	var nodes []nsqlookupdNodesProducer
+	var err error
+	for _, v := range nsqlookupdAddrs {
+		nodes, err = getAllAvailableNSQDFromNSQLookupd(v)
+		if nil != err {
+			//	do next search
+			continue
+		}
+		return nodes, nil
+	}
+	return nil, err
 }
 
 //Get all available nodes from nsqlookupd
@@ -199,13 +219,13 @@ func getAllAvailableNSQDFromNSQLookupd(nsqlookupdAddr string) ([]nsqlookupdNodes
 /*NewNSQProducer return a NSQProducer instance
   @param1 nsqlookupAddr
 */
-func NewNSQProducer(nsqlookupdAddr string, config *nsq.Config, l logger, loglvl nsq.LogLevel) (INSQProducer, error) {
+func NewNSQProducer(nsqlookupdAddrs []string, config *nsq.Config, l logger, loglvl nsq.LogLevel) (INSQProducer, error) {
 	instance := &nsqProducer{
-		lookupdAddr: nsqlookupdAddr,
-		cfg:         config,
+		lookupdAddrs: nsqlookupdAddrs,
+		cfg:          config,
 	}
 
-	nodes, err := getAllAvailableNSQDFromNSQLookupd(nsqlookupdAddr)
+	nodes, err := getAllAvailableNSQDFromNSQLookupds(nsqlookupdAddrs)
 	if nil != err {
 		return nil, err
 	}
