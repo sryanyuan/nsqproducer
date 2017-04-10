@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func doGet(reqURL string, args map[string]string) ([]byte, error) {
+func DoHTTPGet(reqURL string, args map[string]string) ([]byte, error) {
 	u, _ := url.Parse(strings.Trim(reqURL, "/"))
 	q := u.Query()
 	if nil != args {

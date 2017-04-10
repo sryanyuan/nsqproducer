@@ -196,7 +196,7 @@ func getAllAvailableNSQDFromNSQLookupds(nsqlookupdAddrs []string) ([]nsqlookupdN
 //Get all available nodes from nsqlookupd
 func getAllAvailableNSQDFromNSQLookupd(nsqlookupdAddr string) ([]nsqlookupdNodesProducer, error) {
 	//  search for all available node
-	body, err := doGet("http://"+nsqlookupdAddr+"/nodes", nil)
+	body, err := DoHTTPGet("http://"+nsqlookupdAddr+"/nodes", nil)
 	if err != nil {
 		return nil, err
 	}
